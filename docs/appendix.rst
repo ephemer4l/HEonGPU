@@ -59,43 +59,43 @@ This table details the execution times for various CKKS bootstrapping operations
    :header-rows: 1
 
    * - Bootstrapping Type
-     - N
+     - :math:`N`
      - Slot Count
      - LKM
      - Remaining Level
      - Total Time
      - Amortized Time
    * - **Slim**
-     - 2^16
-     - 2^15
+     - :math:`2^{16}`
+     - :math:`2^{15}`
      - ON
      - 4
      - 164.20 ms
      - 5.01 µs
    * - **Bit**
-     - 2^15
-     - 2^14
+     - :math:`2^{15}`
+     - :math:`2^{14}`
      - OFF
      - 6
      - 55.66 ms
      - 3.40 µs
    * - **Bit**
-     - 2^16
-     - 2^15
+     - :math:`2^{16}`
+     - :math:`2^{15}`
      - OFF
      - 4
      - 115.88 ms
      - 3.53 µs
-   * - **Gate***
-     - 2^15
-     - 2^14
+   * - **Gate** [#]_
+     - :math:`2^{15}`
+     - :math:`2^{14}`
      - OFF
      - 0
      - 27.03 ms
      - 1.64 µs
-   * - **Gate***
-     - 2^16
-     - 2^15
+   * - **Gate** [#]_
+     - :math:`2^{16}`
+     - :math:`2^{15}`
      - OFF
      - 0
      - 70.73 ms
