@@ -8,52 +8,23 @@ This section provides more detailed guidance on using the library's features, in
 Core Library Concepts
 ---------------------
 
-The HEonGPU API is designed to be intuitive, especially for users familiar with other FHE libraries like Microsoft SEAL. The main classes you will interact with are:
+The HEonGPU API is designed to be stable and straightforward. The main classes you will interact with are:
 
-* ``EncryptionParameters``: Holds all the parameters defining the cryptographic context, including the scheme type (BFV or CKKS), polynomial modulus degree, and coefficient moduli.
-* ``HEonGPUContext``: Manages the environment for all cryptographic operations, validating parameters and pre-computing necessary values on the GPU.
-* ``KeyGenerator``: Creates the public and secret key pair, as well as relinearization and Galois keys needed for specific homomorphic operations.
-* ``Encryptor``: Encrypts plaintext data into ciphertexts using the public key.
-* ``Decryptor``: Decrypts ciphertexts back into plaintexts using the secret key.
-* ``Evaluator``: The workhorse of the library, performing all homomorphic operations (e.g., addition, multiplication, relinearization, rotation) on ciphertexts entirely on the GPU.
+* ``EncryptionParameters``: Holds all parameters defining the cryptographic context.
+* ``HEonGPUContext``: Manages the environment for all cryptographic operations, validating parameters and pre-computing necessary values on the GPU. Once created, the context is frozen.
+* ``KeyGenerator``: Creates the public/secret key pair, as well as relinearization and Galois keys.
+* ``Encryptor``, ``Decryptor``, ``Evaluator``: Perform the core cryptographic operations.
+* ``ExecutionOptions``: A struct allowing the user to specify data locality (host or device) for inputs and outputs of an operation.
 
 Tutorial: Integer Arithmetic with the BFV Scheme
 ------------------------------------------------
 
-The BFV scheme is ideal for applications requiring exact computations on integers, such as secure database queries or statistical analysis.
-
-.. code-block:: cpp
-   :linenos:
-
-    //... (setup and key generation as in the previous example)...
-
-    // Encrypt two integers
-    int64_t a = 12;
-    int64_t b = -5;
-    heongpu::Plaintext ptxt_a(std::to_string(a));
-    heongpu::Plaintext ptxt_b(std::to_string(b));
-    heongpu::Ciphertext ctxt_a, ctxt_b;
-    encryptor.encrypt(ptxt_a, ctxt_a);
-    encryptor.encrypt(ptxt_b, ctxt_b);
-
-    // Perform homomorphic multiplication
-    heongpu::Ciphertext ctxt_mul_result;
-    evaluator.multiply(ctxt_a, ctxt_b, ctxt_mul_result);
-
-    // Multiplication increases the size of the ciphertext.
-    // Relinearization is needed to reduce it back to the original size.
-    heongpu::RelinearizationKeys relin_keys = keygen.create_relin_keys();
-    evaluator.relinearize_inplace(ctxt_mul_result, relin_keys);
-
-    // Decrypt and verify
-    heongpu::Plaintext ptxt_mul_result;
-    decryptor.decrypt(ctxt_mul_result, ptxt_mul_result);
-    //... (code to print and verify result, which should be -60)...
+The BFV scheme is ideal for applications requiring exact computations on integers. The example in the :ref:`getting_started` guide provides a template for basic BFV operations.
 
 Tutorial: Approximate Number Arithmetic with the CKKS Scheme
 ------------------------------------------------------------
 
-The CKKS scheme is tailored for applications involving real or complex numbers, such as privacy-preserving machine learning inference. It performs approximate arithmetic, and managing the precision (scale) of the encrypted values is a key consideration.
+The CKKS scheme is tailored for applications involving real or complex numbers, such as privacy-preserving machine learning. It performs approximate arithmetic, and managing the precision (scale) is a key consideration.
 
 .. code-block:: cpp
    :linenos:
@@ -91,15 +62,18 @@ The CKKS scheme is tailored for applications involving real or complex numbers, 
     decryptor.decrypt(ctxt_squared, ptxt_squared);
     std::vector<double> output_vec;
     encoder.decode(ptxt_squared, output_vec);
-    //... (code to print the resulting vector, which will be approximately {9.869, 7.388, 2.618})...
+    //... (code to print the resulting vector)...
 
 Parameter Selection Guide
 -------------------------
 
-Choosing the right encryption parameters is crucial for balancing security, performance, and computational depth.
+Choosing the right encryption parameters is crucial for balancing security, performance, and computational depth. The library's design philosophy is for the user to explicitly configure all parameters at the ``Context`` level before any keys are generated.
 
-* **Security Level**: The library was developed and tested for a 128-bit security level, which is the standard for most modern applications.
-* **Polynomial Modulus Degree (N)**: This parameter is the primary driver of security and performance. Larger values of N provide more security and a larger "noise budget" (allowing for more computations), but at a significant performance cost. The prototype versions of the library focused on power-of-two values for N such as 4096, 8192, 16384, and 32768. These are recommended starting points.
-* **Coefficient Modulus (q)**: This is a chain of prime numbers. The size and number of these primes determine the computational depth of the circuit you can evaluate. A larger total bit-size for q allows for more sequential multiplications before the noise overwhelms the signal. The library's use of the Residue Number System (RNS) makes operations with multiple coefficient moduli highly suitable for parallelization on the GPU.
+* **Security Level**: The library is designed for a 128-bit security level.
+* **Polynomial Modulus Degree (N)**: This parameter is the primary driver of security and performance. Larger values of N provide more security and a larger "noise budget" but at a significant performance cost. Power-of-two values for N (e.g., 4096, 8192, 16384) are recommended starting points.
+* **Coefficient Modulus (q)**: This is a chain of prime numbers that determines the computational depth.
+* **Plaintext Modulus (t)**: For the BFV scheme, this defines the size of the integer message space.
+* **Bootstrapping Mode**: For schemes that support it (CKKS, TFHE), the specific bootstrapping mode (e.g., regular, slim, bit, or gate) must be selected during context creation.
+* **Key-Switching Mode**: Settings for key-switching, such as digit decomposition, are also fixed when the context is created.
 
-For newcomers, it is highly recommended to start with the pre-defined parameter sets available in the library or to use the parameters from the tutorial examples.
+This explicit setup ensures that the user has full control and awareness of the active parameters, as the system will not silently reconfigure them.
