@@ -86,14 +86,14 @@ This table details the execution times for various CKKS bootstrapping operations
      - 4
      - 115.88 ms
      - 3.53 µs
-   * - **Gate** [#]_
+   * - **Gate***
      - :math:`2^{15}`
      - :math:`2^{14}`
      - OFF
      - 0
      - 27.03 ms
      - 1.64 µs
-   * - **Gate** [#]_
+   * - **Gate***
      - :math:`2^{16}`
      - :math:`2^{15}`
      - OFF
@@ -101,7 +101,7 @@ This table details the execution times for various CKKS bootstrapping operations
      - 70.73 ms
      - 2.16 µs
 
-.. [#] For all logic gates.
+*For all logic gates.
 
 How to Cite HEonGPU
 -------------------
