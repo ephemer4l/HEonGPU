@@ -108,8 +108,7 @@ How to Cite HEonGPU
 
 Please use the following BibTeX entries to cite HEonGPU and its associated research in academic papers.
 
-**Main Library Paper:**
-.. code-block::
+**Main Library Paper:**::
 
     @misc{cryptoeprint:2024/1543,
           author = {Ali Şah Özcan and Erkay Savaş},
@@ -119,8 +118,7 @@ Please use the following BibTeX entries to cite HEonGPU and its associated resea
           url = {https://eprint.iacr.org/2024/1543}
     }
 
-**Key-Switching Optimizations Paper:**
-.. code-block:: 
+**Key-Switching Optimizations Paper:**:: 
 
     @misc{cryptoeprint:2025/124,
           author = {Ali Şah Özcan and Erkay Savaş},
