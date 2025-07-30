@@ -55,14 +55,21 @@ HEonGPU is distinguished by a comprehensive set of features designed for perform
 
 **Advanced Bootstrapping Support**
     Bootstrapping, the process of refreshing a ciphertext to reduce its noise, is a cornerstone feature that enables computations of arbitrary depth. HEonGPU provides extensive, highly optimized bootstrapping support:
-    * **CKKS**: Four distinct variants are implemented: **Regular** (for complex numbers), **Slim** (an efficient version for real numbers), **Bit** (for binary data), and **Gate** (which embeds a logic gate evaluation within the bootstrap).
-    * **TFHE**: **Gate bootstrapping** is supported, enabling the efficient evaluation of boolean circuits.
+
+    * **CKKS**: 
+
+        Four distinct variants are implemented: **Regular** (for complex numbers), **Slim** (an efficient version for real numbers), **Bit** (for binary data), and **Gate** (which embeds a logic gate evaluation within the bootstrap).
+    
+    * **TFHE**:
+
+        **Gate bootstrapping** is supported, enabling the efficient evaluation of boolean circuits.
 
 **Multi-Party Computation (MPC)**
     The library includes support for secure multi-party computation protocols. This allows multiple parties to collaboratively compute on encrypted data using threshold encryption models (e.g., N-out-of-N). This capability is enhanced by **Collective (Distributed) Bootstrapping**, which allows deep multi-party workloads to run entirely on the GPU without pausing to reset noise.
 
 **Broad Scheme Support**
     HEonGPU provides high-performance implementations for several of the most widely used FHE schemes:
+
     * **BFV**: For performing exact computations on encrypted integers, using RNS variants for efficiency.
     * **CKKS**: For performing approximate arithmetic on encrypted real or complex numbers, making it particularly suitable for privacy-preserving machine learning.
     * **TFHE**: For high-speed boolean circuit evaluation and programmable bootstrapping. It includes native support for homomorphic unsigned integer types from ``huint8`` to ``huint256``.

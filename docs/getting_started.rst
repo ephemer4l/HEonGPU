@@ -57,7 +57,7 @@ The library uses a standard CMake build process. The most critical configuration
          - 89, 90
 
 **Step 3: Compile the Library**
-    Once configuration is complete, build the library using the following command. The ``-j`` flag will use multiple cores to speed up compilation.
+    Once configuration is complete, build the library using the following command. The ``-jN`` flag will use multiple cores to speed up compilation. Replace ``N`` by the number of your logical cores (i.e. the output of ``nproc``).
 
     .. code-block:: bash
 
