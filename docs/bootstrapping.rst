@@ -12,7 +12,8 @@ CKKS Bootstrapping
 
 The CKKS bootstrapping implementation in HEonGPU is a complex procedure consisting of four main stages: `Mod Raise`, `Coeff to Slot`, `Approximate Modular Reduction`, and `Slot to Coeff`. The most time-consuming part of this process is the `Coeff to Slot` stage, which involves homomorphic Discrete Fourier Transforms (DFTs).
 
-### Implementation and Optimization Details
+Implementation and Optimization Details
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The implementation is heavily optimized for GPU execution and is based on techniques described in several key academic papers.
 
@@ -21,11 +22,13 @@ The implementation is heavily optimized for GPU execution and is based on techni
 * **Configurable Precision**: The `Approximate Modular Reduction` stage currently uses a Taylor approximation. The `BootstrappingConfig` class allows the user to configure the precision of this approximation.
 * **Memory Management**: Bootstrapping is extremely memory-intensive, particularly due to the large size of the Galois keys required for rotations. The `BootstrappingConfig` class provides a ``less_key_mode``. When enabled, this mode reduces the number of required Galois keys by 30% at the cost of a 15-20% performance decrease, making it a valuable option for systems with limited GPU memory.
 
-### CKKS Bootstrapping Variants
+CKKS Bootstrapping Variants
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 HEonGPU supports four different types of bootstrapping for the CKKS scheme, each tailored to a specific use case.
 
-#### 1. Regular Bootstrapping
+1. Regular Bootstrapping
+""""""""""""""""""""""""
 
 This is the standard bootstrapping procedure for CKKS, applied when the encrypted message contains **complex numbers**.
 
@@ -37,7 +40,8 @@ This is the standard bootstrapping procedure for CKKS, applied when the encrypte
       C["Encode(<b>m</b> + q<b>I</b>)"] -->|EvalMod| D["Encode(<b>m</b>)"]
       D["Encode(<b>m</b>)"] -->|SlotToCoeff| E["m(x)"]
 
-#### 2. Slim Bootstrapping
+2. Slim Bootstrapping
+"""""""""""""""""""""
 
 This is a more efficient variant designed for messages in the **real number domain**. The process begins with `SlotToCoeff` rather than `ModRaise`, ensuring that the modular reduction is applied exclusively to the real part of the message.
 
@@ -49,11 +53,13 @@ This is a more efficient variant designed for messages in the **real number doma
       C["z(x) + qI(x)"] -->|CoeffToSlot| D["Encode(<b>z</b> + q<b>I</b>)"]
       D["Encode(<b>z</b> + q<b>I</b>)"] -->|EvalMod| E["Encode(<b>z</b>)"]
 
-#### 3. Bit Bootstrapping
+3. Bit Bootstrapping
+""""""""""""""""""""
 
 This variant is highly optimized for messages in the **binary domain**. It replaces the standard `EvalMod` function with a more efficient `EvalBinboot` function, which requires a lower multiplication depth. For this method to function correctly, the last modulus in the coefficient chain (:math:`q_L`) must be exactly twice the value of the CKKS scaling factor (:math:`\Delta`).
 
-#### 4. Gate Bootstrapping
+4. Gate Bootstrapping
+"""""""""""""""""""""
 
 This is the most specialized variant, also designed for **binary messages**. It is similar to Bit Bootstrapping but uses an `EvalGateboot` function. This function applies a logic gate (e.g., AND, OR, XOR) *directly during the bootstrapping process*, similar to how gate bootstrapping is performed in TFHE. This is extremely efficient as it does not require an extra level to continue operations after bootstrapping. For this method to function correctly, the last modulus (:math:`q_L`) must be exactly three times the value of the scaling factor (:math:`\Delta`).
 

@@ -22,7 +22,8 @@ The most computationally intensive operation in lattice-based FHE is the multipl
 
 The core of the optimization lies in a novel strategy for selecting CUDA launch parameters (kernel count, block size, and block shape) to create the most efficient memory access patterns for a given polynomial degree.
 
-### GPU-Specific NTT Optimizations
+GPU-Specific NTT Optimizations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The NTT implementation in HEonGPU is not a direct port of CPU algorithms but a ground-up redesign for GPU architecture, as detailed in `ePrint 2023/1410 <https://eprint.iacr.org/2023/1410>`_. Key optimization strategies include:
 
@@ -31,7 +32,8 @@ The NTT implementation in HEonGPU is not a direct port of CPU algorithms but a g
 * **Efficient Shared Memory Use**: Fast, on-chip shared memory is used as a programmable cache. For stages of the NTT where threads within a block need to exchange data, that data is first loaded from slow global memory into fast shared memory, operated upon, and then written back. This dramatically reduces costly global memory traffic.
 * **Optimal Block Size and Occupancy**: While a CUDA thread block can contain up to 1024 threads, using the maximum is not always optimal. A smaller block size (e.g., 256 threads) can lead to higher *occupancy*—the ratio of active warps to the maximum possible on a Streaming Multiprocessor (SM). Higher occupancy allows the GPU to hide memory latency more effectively by switching to other active warps while one is stalled waiting for data. Experiments showed that a block size of 256 often provides the best balance of parallelism and resource utilization.
 
-### Key-Switching Optimizations
+Key-Switching Optimizations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Key-switching is a fundamental primitive used in operations like relinearization (after multiplication) and rotations. It is computationally expensive and has been a major focus of optimization. The library implements and compares three different key-switching methods, with detailed analysis in `ePrint 2025/124 <https://eprint.iacr.org/2025/124>`_:
 

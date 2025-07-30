@@ -105,7 +105,8 @@ HEonGPU includes a high-performance serialization module for all major objects (
 Tutorials
 ---------
 
-### Integer Arithmetic with the BFV Scheme
+Integer Arithmetic with the BFV Scheme
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The BFV scheme is ideal for applications requiring exact computations on encrypted integers. A typical multiplication involves:
 
@@ -113,7 +114,8 @@ The BFV scheme is ideal for applications requiring exact computations on encrypt
 2.  **Multiply**: Use the ``HEArithmeticOperator`` to multiply the two ciphertexts. Homomorphic multiplication increases the size of the resulting ciphertext from 2 to 3 polynomials.
 3.  **Relinearize**: Relinearization is a key-switching operation that reduces the ciphertext back to its original size of 2 polynomials, making subsequent operations more efficient. This step requires ``RelinearizationKeys``. The library will not permit further multiplications on a non-relinearized ciphertext.
 
-### Approximate Arithmetic with the CKKS Scheme
+Approximate Arithmetic with the CKKS Scheme
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The CKKS scheme is tailored for applications involving real or complex numbers, such as privacy-preserving machine learning. Key steps include:
 
@@ -122,7 +124,8 @@ The CKKS scheme is tailored for applications involving real or complex numbers, 
 3.  **Multiply**: Perform a homomorphic multiplication. The scale of the resulting ciphertext will be approximately the product of the input scales (e.g., :math:`(2^{40})^2 = 2^{80}`).
 4.  **Rescale**: To manage the precision and prevent the scale from growing uncontrollably, a `rescale` operation is performed. This operation divides the internal plaintext by one of the coefficient moduli, effectively reducing the scale (e.g., back down to ~:math:`2^{40}`) and consuming one level of the modulus chain. The library will not permit further multiplications until a rescale operation is performed.
 
-### Noise Management in BFV
+Noise Management in BFV
+^^^^^^^^^^^^^^^^^^^^^^^
 
 In the BFV scheme, HEonGPU provides a mechanism for **invariant noise estimation**. This allows users to monitor the health of a ciphertext. The library can compute the remaining "noise budget," expressed in bits, which quantifies the remaining capacity for noise growth while still ensuring correct decryption.
 
