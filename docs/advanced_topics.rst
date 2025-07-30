@@ -11,6 +11,7 @@ Configuration (`define.h`)
 The `src/heongpu/include/kernel/defines.h` file is an essential configuration header that contains key settings defining the library's limits and default behaviors. Advanced users can modify these values to tune the library for specific hardware or demanding use cases.
 
 Key settings include:
+
 * **Polynomial Degree**: ``MAX_POLY_DEGREE`` (default: 65536) and ``MIN_POLY_DEGREE`` (default: 4096) define the supported range for polynomial degrees.
 * **Modulus Bit-Length**: These constants specify the valid bit-lengths for user-defined and general modulus values, ensuring cryptographic security.
 * **Galois Key Capability**: ``MAX_SHIFT`` (default: 8) controls the maximum rotation capability for default Galois key generation. If your application requires more rotation steps, this value must be increased.
@@ -56,6 +57,7 @@ Project Roadmap
 HEonGPU is an actively developing project with a clear vision for the future. The roadmap indicates a strategic expansion from accelerating core cryptographic primitives to enabling complex, end-to-end privacy-preserving systems.
 
 Planned enhancements include:
+
 * **Support for Additional Schemes**: The library plans to add support for the **BGV** scheme to expand its cryptographic capabilities.
 * **Python Wrapper**: To make the library more accessible to the data science and machine learning communities, a Python wrapper is on the roadmap.
 * **Multi-GPU Support**: The architecture is planned to be extended to support multi-GPU configurations, including a multi-GPU memory pool structure, to facilitate the execution of even larger-scale applications.
