@@ -3,23 +3,28 @@
 Getting Started
 ===============
 
-This section provides a practical guide to installing HEonGPU and running a basic encrypted computation. The process is designed to be straightforward for developers familiar with C++ and CMake.
+This section provides a practical guide to installing the HEonGPU library, verifying the installation by running tests and examples, and executing your first encrypted computation. The process is designed to be straightforward for developers familiar with C++ and CMake in a Linux environment.
 
 Prerequisites
 -------------
 
-Before building the library, ensure your development environment meets the following requirements:
+Before building the library, ensure your development environment meets the following requirements. The library handles most of its third-party C++ dependencies (like `GPU-NTT`, `RMM`, `Thrust`, and `GoogleTest`) automatically via CMake.
 
-* **CMake**: Version 3.26.4 or higher.
-* **C++ Compiler**: A modern C++ compiler with C++17 support (e.g., GCC).
-* **NVIDIA CUDA Toolkit**: Version 11.4 or higher.
+**System Dependencies:**
+
+* **CMake**: Version 3.26.4 or higher
+* **GCC**: A modern C++ compiler with C++17 support
+* **GMP**: The GNU Multiple Precision Arithmetic Library
+* **CUDA Toolkit**: Version 11.4 or higher
+* **OpenSSL**: Version 1.1.0 or higher
+* **ZLIB**: The data compression library
 
 Building the Library
 --------------------
 
-The library uses CMake for a cross-platform build process. The most critical configuration step is specifying the correct compute capability for your target GPU.
+The library uses a standard CMake build process. The most critical configuration step is specifying the correct compute capability for your target GPU, as this is essential for both correctness and performance.
 
-1.  **Clone the Repository**:
+**Step 1: Clone the Repository**
     First, obtain the source code from the official GitHub repository.
 
     .. code-block:: bash
@@ -27,21 +32,21 @@ The library uses CMake for a cross-platform build process. The most critical con
         git clone https://github.com/Alisah-Ozcan/HEonGPU.git
         cd HEonGPU
 
-2.  **Configure with CMake**:
-    Run CMake from the root of the repository to generate the build files. You must set the ``CMAKE_CUDA_ARCHITECTURES`` variable to match your GPU's architecture. This flag instructs the CUDA compiler (``nvcc``) to generate code specifically optimized for your hardware, which is essential for both correctness and performance.
+**Step 2: Configure with CMake**
+    Run CMake from the root of the repository to generate the build files. You **must** set the ``CMAKE_CUDA_ARCHITECTURES`` variable to match your GPU's architecture. This flag instructs the CUDA compiler (``nvcc``) to generate code specifically optimized for your hardware.
 
     .. code-block:: bash
 
-        cmake -S. -D CMAKE_CUDA_ARCHITECTURES=XX -B build
+        cmake -S . -D CMAKE_CUDA_ARCHITECTURES=XX -B build
 
-    Replace ``XX`` with the appropriate value from the table below. For example, for an NVIDIA A100 GPU, you would use ``80``.
+    Replace ``XX`` with the appropriate value from the table below. For example, for an NVIDIA RTX 4090 (Ada Lovelace architecture), you would use ``89``.
 
     .. list-table:: GPU Architecture to CMAKE_CUDA_ARCHITECTURES Mapping
        :widths: 25 25
        :header-rows: 1
 
        * - GPU Architecture
-         - ``CMAKE_CUDA_ARCHITECTURES`` Value
+         - Compute Capability
        * - Volta
          - 70, 72
        * - Turing
@@ -51,71 +56,109 @@ The library uses CMake for a cross-platform build process. The most critical con
        * - Ada Lovelace
          - 89, 90
 
-3.  **Compile the Library**:
-    Once configuration is complete, build the library using the following command:
+**Step 3: Compile the Library**
+    Once configuration is complete, build the library using the following command. The ``-j`` flag will use multiple cores to speed up compilation.
 
     .. code-block:: bash
 
-        cmake --build ./build/ --config Release -j
+        cmake --build ./build/ -j
 
-    This will compile the HEonGPU static or shared library, which will be located in the ``build/lib`` directory.
+**Step 4: Install (Optional)**
+    To install the library system-wide (e.g., in `/usr/local/lib` and `/usr/local/include`), run the install command.
+
+    .. code-block:: bash
+
+        sudo cmake --install build
+
+Verifying the Installation
+--------------------------
+
+After a successful build, you can verify the library's functionality by running the built-in tests, benchmarks, and examples. To do this, you must enable them during the CMake configuration step.
+
+* **To build and run tests**:
+    .. code-block:: bash
+
+        # Configure with tests enabled
+        cmake -S . -D HEonGPU_BUILD_TESTS=ON -D CMAKE_CUDA_ARCHITECTURES=89 -B build
+        
+        # Build
+        cmake --build ./build/ -j
+        
+        # Run all tests
+        cmake --build build --target test
+
+* **To build and run examples**:
+    .. code-block:: bash
+
+        # Configure with examples enabled
+        cmake -S . -D HEonGPU_BUILD_EXAMPLES=ON -D CMAKE_CUDA_ARCHITECTURES=89 -B build
+        
+        # Build
+        cmake --build ./build/ -j
+        
+        # Run a specific example
+        ./build/bin/examples/1_basic_bfv
 
 Your First Encrypted Computation
 ---------------------------------
 
-After successfully building the library, you can write a simple program to verify its functionality. The following conceptual example demonstrates a typical FHE workflow: setup, key generation, encryption, computation, and decryption.
+The following "toy example" from the repository demonstrates a complete FHE workflow: setting up the context, generating keys, encoding, encrypting, performing a homomorphic addition, decrypting, and decoding the result.
 
 .. code-block:: cpp
    :linenos:
 
-    // Note: This is a conceptual example. Actual class and method names may vary.
-    #include <iostream>
-    #include "heongpu/heongpu.h" // Assumed header
+    #include "heongpu.cuh"
 
     int main() {
-        // 1. Set up encryption parameters for the BFV scheme
-        heongpu::EncryptionParameters params(heongpu::scheme_type::bfv);
-        size_t poly_modulus_degree = 8192;
-        params.set_poly_modulus_degree(poly_modulus_degree);
-        params.set_coeff_modulus(heongpu::CoeffModulus::BFVDefault(poly_modulus_degree));
-        params.set_plain_modulus(1024);
+        // Initialize the GPU device and memory pool
+        cudaSetDevice(0); 
+        
+        // 1. Set up the HEContext for the BFV scheme
+        heongpu::HEContext<heongpu::Scheme::BFV> context(
+                heongpu::keyswitching_type::KEYSWITCHING_METHOD_I);
 
-        // 2. Create the HEonGPU context
-        auto context = heongpu::HEonGPUContext(params);
+        // 2. Define and set encryption parameters
+        size_t poly_modulus_degree = 8192;
+        context.set_poly_modulus_degree(poly_modulus_degree);
+        context.set_coeff_modulus_default_values(1); // Use 1 default prime for the coeff modulus
+        int plain_modulus = 1032193;
+        context.set_plain_modulus(plain_modulus);
+        context.generate(); // Finalize context and pre-compute values on GPU
 
         // 3. Generate keys
-        heongpu::KeyGenerator keygen(context);
-        heongpu::PublicKey public_key = keygen.create_public_key();
-        heongpu::SecretKey secret_key = keygen.secret_key();
+        heongpu::HEKeyGenerator<heongpu::Scheme::BFV> keygen(context);
+        heongpu::Secretkey<heongpu::Scheme::BFV> secret_key(context);
+        keygen.generate_secret_key(secret_key);
 
-        // 4. Create Encryptor and Evaluator objects
-        heongpu::Encryptor encryptor(context, public_key);
-        heongpu::Evaluator evaluator(context);
-        heongpu::Decryptor decryptor(context, secret_key);
+        heongpu::Publickey<heongpu::Scheme::BFV> public_key(context);
+        keygen.generate_public_key(public_key, secret_key);
 
-        // 5. Encrypt data
-        int64_t x = 6;
-        int64_t y = 7;
-        heongpu::Plaintext ptxt_x(std::to_string(x));
-        heongpu::Plaintext ptxt_y(std::to_string(y));
+        // 4. Create Encoder, Encryptor, Decryptor, and Operator objects
+        heongpu::HEEncoder<heongpu::Scheme::BFV> encoder(context);
+        heongpu::HEEncryptor<heongpu::Scheme::BFV> encryptor(context, public_key);
+        heongpu::HEDecryptor<heongpu::Scheme::BFV> decryptor(context, secret_key);
+        heongpu::HEArithmeticOperator<heongpu::Scheme::BFV> operators(context, encoder);
 
-        heongpu::Ciphertext ctxt_x, ctxt_y;
-        encryptor.encrypt(ptxt_x, ctxt_x);
-        encryptor.encrypt(ptxt_y, ctxt_y);
+        // 5. Create a message and encode it into a plaintext
+        std::vector<uint64_t> message(poly_modulus_degree, 8ULL);
+        heongpu::Plaintext<heongpu::Scheme::BFV> P1(context);
+        encoder.encode(P1, message);
 
-        // 6. Perform homomorphic addition
-        heongpu::Ciphertext ctxt_result;
-        evaluator.add(ctxt_x, ctxt_y, ctxt_result);
+        // 6. Encrypt the plaintext into a ciphertext
+        heongpu::Ciphertext<heongpu::Scheme::BFV> C1(context);
+        encryptor.encrypt(C1, P1);
 
-        // 7. Decrypt the result
-        heongpu::Plaintext ptxt_result;
-        decryptor.decrypt(ctxt_result, ptxt_result);
+        // 7. Perform a homomorphic operation (in-place addition)
+        operators.add_inplace(C1, C1); // Result: 8 + 8 = 16
 
-        // 8. Verify the result
-        int64_t result;
-        std::from_chars(ptxt_result.to_string().data(), ptxt_result.to_string().data() + ptxt_result.to_string().size(), result);
-        std::cout << "Plaintext values: x = " << x << ", y = " << y << std::endl;
-        std::cout << "Homomorphic addition result: " << result << std::endl;
+        // 8. Decrypt the result
+        heongpu::Plaintext<heongpu::Scheme::BFV> P2(context);
+        decryptor.decrypt(P2, C1);
 
+        // 9. Decode the plaintext to retrieve the final vector
+        std::vector<uint64_t> result;
+        encoder.decode(result, P2);
+
+        // The 'result' vector should now contain the value 16 in all its slots.
         return 0;
     }

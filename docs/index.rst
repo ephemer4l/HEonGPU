@@ -15,6 +15,8 @@ This documentation provides a comprehensive guide to the library, from installat
    getting_started
    user_guide
    technical_deep_dive
+   bootstrapping
+   examples
    api_reference
    advanced_topics
    contributing
